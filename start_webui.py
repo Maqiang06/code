@@ -19,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description='启动量化交易助手自我进化系统Web控制面板')
     parser.add_argument('--port', type=int, default=5001, help='服务器端口 (默认: 5001)')
     parser.add_argument('--host', default='0.0.0.0', help='服务器主机 (默认: 0.0.0.0)')
+    parser.add_argument('--debug', action='store_true', help='启用调试模式')
     args = parser.parse_args()
     
     # 切换到脚本所在目录
@@ -60,6 +61,8 @@ def main():
         '--host', args.host,
         '--port', str(args.port)
     ]
+    if args.debug:
+        cmd.append('--debug')
     
     try:
         subprocess.run(cmd, check=True)

@@ -1,397 +1,524 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="tv-theme">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自我进化系统控制面板</title>
+    <title>自我进化系统 - 量化交易助手</title>
+    <!-- Bootstrap 5 (基础框架) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- TradingView风格CSS -->
+    <link rel="stylesheet" href="/static/css/tradingview.css">
+    <!-- 自定义样式补充 -->
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
+        /* 全局文本颜色强制亮色 */
+        .tv-theme, .tv-theme * {
+            color: #ffffff !important;
         }
         
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* 覆盖Bootstrap的默认样式以适应深色主题 */
+        .tv-theme .bg-light { background-color: var(--tv-color-background-tertiary) !important; }
+        .tv-theme .text-muted { color: var(--tv-color-text-secondary) !important; }
+        .tv-theme .text-secondary { color: #aabbcc !important; }
+        .tv-theme .text-primary { color: #2962ff !important; }
+        .tv-theme .text-success { color: #00c076 !important; }
+        .tv-theme .text-danger { color: #ff5252 !important; }
+        .tv-theme .text-warning { color: #ff9800 !important; }
+        .tv-theme .text-info { color: #2962ff !important; }
+        .tv-theme .text-dark { color: #ffffff !important; }
+        .tv-theme .text-body { color: #ffffff !important; }
+        .tv-theme .text-black { color: #ffffff !important; }
+        .tv-theme .bg-success { background-color: var(--tv-color-green) !important; }
+        .tv-theme .bg-danger { background-color: var(--tv-color-red) !important; }
+        .tv-theme .bg-warning { background-color: var(--tv-color-yellow) !important; }
+        .tv-theme .bg-info { background-color: var(--tv-color-blue) !important; }
+        .tv-theme .bg-primary { background-color: var(--tv-color-blue) !important; }
+        .tv-theme .bg-white { background-color: var(--tv-color-background-secondary) !important; }
+        .tv-theme .bg-dark { background-color: var(--tv-color-background-tertiary) !important; }
+        
+        /* Chart.js - 确保图表完全可见 */
+        #performance-chart {
+            background-color: #0c101c !important;
+            display: block !important;
+            width: 100% !important;
+            min-height: 280px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
         
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1.5rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .tv-chart-body {
+            min-height: 300px !important;
+            height: 300px !important;
         }
         
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 1.5rem;
+        /* 移除对Chart.js canvas的filter，避免隐藏图表内容 */
+        .tv-theme canvas#performance-chart {
+            filter: none !important;
+            opacity: 1 !important;
         }
         
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        /* 修复表单元素 */
+        .tv-theme input, .tv-theme select {
+            background-color: var(--tv-color-background-tertiary) !important;
+            color: var(--tv-color-text-primary) !important;
+            border-color: var(--tv-color-border-medium) !important;
         }
         
-        .card-header {
-            background-color: white;
-            border-bottom: 2px solid var(--light-color);
-            font-weight: 600;
-            color: var(--dark-color);
+        .tv-theme input::placeholder {
+            color: var(--tv-color-text-secondary) !important;
         }
         
-        .status-badge {
-            font-size: 0.85rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 20px;
+        /* 修复禁用状态 */
+        .tv-theme input:disabled, .tv-theme select:disabled, .tv-theme button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
-        .metric-card {
-            text-align: center;
-            padding: 1.5rem 1rem;
+        /* 图表容器 */
+        .tv-chart-container {
+            background-color: var(--tv-color-card-background) !important;
         }
         
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1;
-            margin: 0.5rem 0;
+        .tv-chart-body {
+            background-color: var(--tv-color-background-chart) !important;
         }
         
-        .metric-label {
-            color: #6c757d;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* 自定义动画 */
+        @keyframes tv-fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .metric-change {
-            font-size: 0.85rem;
+        .tv-animate-fade {
+            animation: tv-fade-in 0.3s ease-out;
         }
         
-        .alert-card {
-            max-height: 400px;
-            overflow-y: auto;
+        /* 实时数据闪烁效果 */
+        @keyframes tv-blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
         
-        .alert-item {
-            padding: 0.75rem 1rem;
-            border-left: 4px solid transparent;
-            margin-bottom: 0.5rem;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            transition: background-color 0.2s;
+        .tv-blink {
+            animation: tv-blink 1s infinite;
         }
         
-        .alert-item:hover {
-            background-color: #e9ecef;
+        /* 滚动条样式 */
+        .tv-theme ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
         
-        .alert-critical {
-            border-left-color: var(--danger-color);
+        .tv-theme ::-webkit-scrollbar-track {
+            background: var(--tv-color-background-secondary);
+            border-radius: 4px;
         }
         
-        .alert-warning {
-            border-left-color: var(--warning-color);
+        .tv-theme ::-webkit-scrollbar-thumb {
+            background: var(--tv-color-border-light);
+            border-radius: 4px;
         }
         
-        .alert-info {
-            border-left-color: var(--secondary-color);
-        }
-        
-        .system-controls .btn {
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-        
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-        }
-        
-        .module-status {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-        
-        .module-active {
-            background-color: var(--success-color);
-        }
-        
-        .module-inactive {
-            background-color: var(--danger-color);
-        }
-        
-        .refresh-btn {
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .refresh-btn:hover {
-            transform: rotate(180deg);
-        }
-        
-        @media (max-width: 768px) {
-            .metric-value {
-                font-size: 2rem;
-            }
+        .tv-theme ::-webkit-scrollbar-thumb:hover {
+            background: var(--tv-color-text-secondary);
         }
     </style>
 </head>
-<body>
-    <!-- 头部 -->
-    <div class="dashboard-header">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-1">
-                        <i class="bi bi-cpu"></i> 自我进化系统控制面板
-                    </h1>
-                    <p class="mb-0 opacity-75">实时监控与管理系统性能及进化过程</p>
-                </div>
-                <div class="text-end">
-                    <div id="current-time" class="h6 mb-1">--:--:--</div>
-                    <small id="system-status" class="badge bg-success">状态: 加载中...</small>
-                </div>
+<body class="tv-container tv-theme-tech tv-compact">
+    <!-- 顶部导航栏 -->
+    <div class="tv-topbar">
+        <a href="/" class="tv-topbar-logo">
+            <i class="bi bi-cpu"></i>
+            量化交易助手
+        </a>
+        
+        <div class="tv-topbar-nav">
+            <a href="/" class="active">仪表盘</a>
+            <a href="#" data-tooltip="即将推出">监控</a>
+            <a href="#" data-tooltip="即将推出">预测</a>
+            <a href="#" data-tooltip="即将推出">日志</a>
+            <a href="#" data-tooltip="即将推出">设置</a>
+        </div>
+        
+        <div class="tv-topbar-right">
+            <input type="text" class="tv-search-box" placeholder="搜索功能..." disabled>
+            
+            <div class="tv-user-menu">
+                <div class="tv-status-indicator tv-status-active"></div>
+                <span id="current-time">--:--:--</span>
+            </div>
+            
+            <div class="tv-badge tv-badge-success" id="system-status-badge">
+                状态: 加载中...
             </div>
         </div>
     </div>
+    
+    <!-- 数据流效果 -->
+    <div class="tv-data-stream"></div>
 
-    <!-- 主内容 -->
-    <div class="container">
-        <!-- 系统状态行 -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-info-circle me-2"></i>系统状态概览</span>
-                        <div>
-                            <button id="start-system" class="btn btn-sm btn-success me-2" disabled>
-                                <i class="bi bi-play-circle"></i> 启动系统
-                            </button>
-                            <button id="stop-system" class="btn btn-sm btn-danger me-2" disabled>
-                                <i class="bi bi-stop-circle"></i> 停止系统
-                            </button>
-                            <span class="refresh-btn text-primary" id="refresh-status" title="刷新状态">
-                                <i class="bi bi-arrow-clockwise"></i>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="module-status" id="system-status-indicator"></div>
-                                    <div>
-                                        <div class="fw-bold">系统状态</div>
-                                        <div id="system-phase" class="text-muted small">加载中...</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <div class="fw-bold">心跳时间</div>
-                                    <div id="last-heartbeat" class="text-muted small">--:--:--</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <div class="fw-bold">运行时长</div>
-                                    <div id="uptime" class="text-muted small">--</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <div class="fw-bold">任务统计</div>
-                                    <div class="text-muted small">
-                                        活跃: <span id="active-tasks">0</span> | 
-                                        完成: <span id="completed-tasks">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 模块状态 -->
-                        <div class="mt-3">
-                            <div class="fw-bold mb-2">模块状态</div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge" id="module-usage-tracker">
-                                    <i class="bi bi-check-circle"></i> 使用跟踪
-                                </span>
-                                <span class="badge" id="module-demand-analyzer">
-                                    <i class="bi bi-check-circle"></i> 需求分析
-                                </span>
-                                <span class="badge" id="module-auto-optimizer">
-                                    <i class="bi bi-check-circle"></i> 自动优化
-                                </span>
-                                <span class="badge" id="module-auto-installer">
-                                    <i class="bi bi-check-circle"></i> 自动安装
-                                </span>
-                                <span class="badge" id="module-new-function-creator">
-                                    <i class="bi bi-check-circle"></i> 新功能创建
-                                </span>
-                                <span class="badge" id="module-ml-predictor">
-                                    <i class="bi bi-check-circle"></i> 机器学习
-                                </span>
-                                <span class="badge" id="module-real-time-monitor">
-                                    <i class="bi bi-check-circle"></i> 实时监控
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- 主内容区域 -->
+    <div class="tv-main-content">
+        <!-- 左侧边栏 -->
+        <div class="tv-sidebar">
+            <div class="tv-sidebar-section">
+                <div class="tv-sidebar-section-title">系统概览</div>
+                <a href="#system-overview" class="tv-sidebar-item active">
+                    <i class="bi bi-info-circle"></i>
+                    <span>系统状态</span>
+                </a>
+                <a href="#performance-metrics" class="tv-sidebar-item">
+                    <i class="bi bi-graph-up"></i>
+                    <span>性能指标</span>
+                </a>
+                <a href="#module-status" class="tv-sidebar-item">
+                    <i class="bi bi-gear"></i>
+                    <span>模块状态</span>
+                </a>
+            </div>
+            
+            <div class="tv-sidebar-section">
+                <div class="tv-sidebar-section-title">监控工具</div>
+                <a href="#real-time-monitoring" class="tv-sidebar-item">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>实时监控</span>
+                </a>
+                <a href="#alerts" class="tv-sidebar-item">
+                    <i class="bi bi-bell"></i>
+                    <span>系统警报</span>
+                    <span class="tv-badge tv-badge-danger ms-auto" id="sidebar-alert-count">0</span>
+                </a>
+                <a href="#performance-charts" class="tv-sidebar-item">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>性能图表</span>
+                </a>
+            </div>
+            
+            <div class="tv-sidebar-section">
+                <div class="tv-sidebar-section-title">机器学习</div>
+                <a href="#ml-predictions" class="tv-sidebar-item">
+                    <i class="bi bi-robot"></i>
+                    <span>功能预测</span>
+                </a>
+                <a href="#model-status" class="tv-sidebar-item">
+                    <i class="bi bi-cpu"></i>
+                    <span>模型状态</span>
+                </a>
+            </div>
+            
+            <div class="tv-sidebar-section">
+                <div class="tv-sidebar-section-title">系统控制</div>
+                <button id="start-system" class="tv-btn tv-btn-success tv-btn-sm tv-w-100 mb-2">
+                    <i class="bi bi-play-circle"></i> 启动系统
+                </button>
+                <button id="stop-system" class="tv-btn tv-btn-danger tv-btn-sm tv-w-100 mb-2">
+                    <i class="bi bi-stop-circle"></i> 停止系统
+                </button>
+                <button id="refresh-status" class="tv-btn tv-btn-secondary tv-btn-sm tv-w-100">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新状态
+                </button>
             </div>
         </div>
 
-        <!-- 性能指标行 -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card metric-card">
-                    <div class="metric-label">CPU 使用率</div>
-                    <div class="metric-value text-primary" id="cpu-usage">--%</div>
-                    <div class="metric-change" id="cpu-change">--</div>
+        <!-- 主内容区 -->
+        <div class="tv-content">
+            <!-- 系统状态卡片 -->
+            <div class="tv-card tv-tech-card tv-animate-fade">
+                <div class="tv-card-header">
+                    <h3 class="tv-card-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        系统状态概览
+                    </h3>
+                    <div class="tv-flex tv-gap-sm">
+                        <div class="tv-flex tv-items-center">
+                            <div class="tv-status-indicator" id="system-status-indicator"></div>
+                            <span class="tv-text-sm" id="system-phase">加载中...</span>
+                        </div>
+                        <div class="tv-text-secondary tv-text-sm">
+                            心跳: <span id="last-heartbeat">--:--:--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tv-card-body">
+                    <div class="tv-grid tv-grid-4">
+                        <div class="tv-metric-card tv-glow-border">
+                            <div class="tv-metric-label">CPU 使用率</div>
+                            <div class="tv-metric-value neutral" id="cpu-usage">--%</div>
+                            <div class="tv-metric-change neutral" id="cpu-change">--</div>
+                        </div>
+                        <div class="tv-metric-card tv-glow-border">
+                            <div class="tv-metric-label">内存 使用率</div>
+                            <div class="tv-metric-value neutral" id="memory-usage">--%</div>
+                            <div class="tv-metric-change neutral" id="memory-change">--</div>
+                        </div>
+                        <div class="tv-metric-card tv-glow-border">
+                            <div class="tv-metric-label">磁盘 使用率</div>
+                            <div class="tv-metric-value neutral" id="disk-usage">--%</div>
+                            <div class="tv-metric-change neutral" id="disk-change">--</div>
+                        </div>
+                        <div class="tv-metric-card tv-glow-border">
+                            <div class="tv-metric-label">函数执行时间</div>
+                            <div class="tv-metric-value neutral" id="function-time">--ms</div>
+                            <div class="tv-metric-change neutral" id="function-change">--</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 运行状态 -->
+                    <div class="tv-mt-md tv-pt-md tv-border-top">
+                        <div class="tv-flex tv-justify-between tv-items-center">
+                            <div>
+                                <div class="tv-text-secondary tv-text-sm tv-mb-xs">运行时长</div>
+                                <div class="tv-text-primary tv-text-md" id="uptime">--</div>
+                            </div>
+                            <div>
+                                <div class="tv-text-secondary tv-text-sm tv-mb-xs">任务统计</div>
+                                <div class="tv-text-primary tv-text-md">
+                                    活跃: <span id="active-tasks">0</span> | 
+                                    完成: <span id="completed-tasks">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card metric-card">
-                    <div class="metric-label">内存 使用率</div>
-                    <div class="metric-value text-info" id="memory-usage">--%</div>
-                    <div class="metric-change" id="memory-change">--</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card metric-card">
-                    <div class="metric-label">磁盘 使用率</div>
-                    <div class="metric-value text-warning" id="disk-usage">--%</div>
-                    <div class="metric-change" id="disk-change">--</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card metric-card">
-                    <div class="metric-label">函数执行时间</div>
-                    <div class="metric-value text-success" id="function-time">--ms</div>
-                    <div class="metric-change" id="function-change">--</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 图表和警报行 -->
-        <div class="row mb-4">
-            <!-- CPU使用率图表 -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-graph-up me-2"></i>性能趋势
-                        <div class="float-end">
-                            <select id="chart-range" class="form-select form-select-sm d-inline-block w-auto">
-                                <option value="5">最近5分钟</option>
-                                <option value="15">最近15分钟</option>
-                                <option value="30">最近30分钟</option>
-                                <option value="60">最近1小时</option>
+            <!-- 图表和警报行 -->
+            <div class="tv-grid tv-grid-2 tv-gap-lg tv-mt-md">
+                <!-- 性能图表 -->
+                <div class="tv-chart-container tv-tech-card">
+                    <div class="tv-chart-header">
+                        <h4 class="tv-chart-title">
+                            <i class="bi bi-graph-up me-2"></i>
+                            性能趋势
+                        </h4>
+                        <div class="tv-chart-controls">
+                            <select id="chart-range" class="tv-btn tv-btn-secondary tv-btn-sm">
+                                <option value="5">5分钟</option>
+                                <option value="15">15分钟</option>
+                                <option value="30">30分钟</option>
+                                <option value="60">1小时</option>
                             </select>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="performance-chart"></canvas>
-                        </div>
+                    <div class="tv-chart-body">
+                        <canvas id="performance-chart"></canvas>
+                        <script>
+                            // 内联图表初始化 - 确保曲线显示
+                            (function() {
+                                var canvas = document.getElementById('performance-chart');
+                                if (!canvas) return;
+                                if (typeof Chart === 'undefined') {
+                                    console.error('Chart.js未加载');
+                                    return;
+                                }
+                                
+                                var now = new Date();
+                                var labels = [];
+                                var cpuData = [];
+                                var memoryData = [];
+                                var diskData = [];
+                                
+                                for (var i = 20; i >= 0; i--) {
+                                    var time = new Date(now - i * 60000);
+                                    labels.push(('0' + time.getHours()).slice(-2) + ':' + ('0' + time.getMinutes()).slice(-2));
+                                    cpuData.push(Math.random() * 30 + 10);
+                                    memoryData.push(Math.random() * 40 + 20);
+                                    diskData.push(Math.random() * 20 + 50);
+                                }
+                                
+                                canvas.width = canvas.parentElement.clientWidth - 20;
+                                canvas.height = 280;
+                                
+                                var ctx = canvas.getContext('2d');
+                                var chart = new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [
+                                            {
+                                                label: 'CPU使用率 (%)',
+                                                data: cpuData,
+                                                borderColor: '#2962ff',
+                                                backgroundColor: 'rgba(41, 98, 255, 0.15)',
+                                                borderWidth: 2,
+                                                tension: 0.3,
+                                                fill: true,
+                                                pointRadius: 2
+                                            },
+                                            {
+                                                label: '内存使用率 (%)',
+                                                data: memoryData,
+                                                borderColor: '#00c076',
+                                                backgroundColor: 'rgba(0, 192, 118, 0.15)',
+                                                borderWidth: 2,
+                                                tension: 0.3,
+                                                fill: true,
+                                                pointRadius: 2
+                                            },
+                                            {
+                                                label: '磁盘使用率 (%)',
+                                                data: diskData,
+                                                borderColor: '#ff9800',
+                                                backgroundColor: 'rgba(255, 152, 0, 0.15)',
+                                                borderWidth: 2,
+                                                tension: 0.3,
+                                                fill: true,
+                                                pointRadius: 2
+                                            }
+                                        ]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        animation: { duration: 500 },
+                                        plugins: {
+                                            legend: {
+                                                position: 'top',
+                                                labels: {
+                                                    color: '#d1d4dc',
+                                                    font: { size: 11 }
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            x: {
+                                                ticks: { color: '#787b86' },
+                                                grid: { color: '#2a2e39' }
+                                            },
+                                            y: {
+                                                min: 0,
+                                                max: 100,
+                                                ticks: { color: '#787b86' },
+                                                grid: { color: '#2a2e39' }
+                                            }
+                                        }
+                                    }
+                                });
+                                chart.update();
+                            })();
+                        </script>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 警报列表 -->
-            <div class="col-md-4">
-                <div class="card alert-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-bell me-2"></i>系统警报</span>
-                        <span class="badge bg-danger" id="alert-count">0</span>
+                
+                <!-- 机器学习预测 -->
+                <div class="tv-card tv-tech-card">
+                    <div class="tv-card-header">
+                        <h4 class="tv-card-title">
+                            <i class="bi bi-robot me-2"></i>
+                            机器学习预测
+                        </h4>
                     </div>
-                    <div class="card-body p-0">
-                        <div id="alerts-container">
-                            <!-- 警报将动态加载 -->
-                            <div class="alert-item alert-info">
-                                <div class="fw-bold">系统初始化</div>
-                                <div class="small text-muted">控制面板正在启动...</div>
-                                <div class="small text-muted">刚刚</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 监控状态和机器学习 -->
-        <div class="row">
-            <!-- 监控状态 -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-speedometer2 me-2"></i>监控状态
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <div class="fw-bold">监控状态</div>
-                                    <div id="monitoring-status" class="text-muted small">加载中...</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <div class="fw-bold">收集间隔</div>
-                                    <div id="collection-interval" class="text-muted small">-- 秒</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <div class="fw-bold">警报启用</div>
-                                    <div id="alerts-enabled" class="text-muted small">--</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-3">
-                                    <div class="fw-bold">数据保留</div>
-                                    <div id="retention-days" class="text-muted small">-- 天</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 机器学习预测 -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-robot me-2"></i>机器学习预测
-                    </div>
-                    <div class="card-body">
+                    <div class="tv-card-body">
                         <div id="ml-status">
-                            <div class="text-center py-3">
-                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                                加载机器学习状态...
+                            <div class="tv-flex tv-items-center tv-justify-center tv-p-md">
+                                <div class="tv-status-indicator tv-status-connecting"></div>
+                                <span class="tv-text-secondary tv-ml-sm">加载机器学习状态...</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模块状态和系统警报 -->
+            <div class="tv-grid tv-grid-2 tv-gap-lg tv-mt-md">
+                <!-- 模块状态 -->
+                <div class="tv-card tv-tech-card">
+                    <div class="tv-card-header">
+                        <h4 class="tv-card-title">
+                            <i class="bi bi-gear me-2"></i>
+                            模块状态
+                        </h4>
+                    </div>
+                    <div class="tv-card-body">
+                        <div class="tv-grid tv-grid-2 tv-gap-sm">
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-usage-tracker-dot"></div>
+                                <span class="tv-text-sm">使用跟踪</span>
+                            </div>
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-demand-analyzer-dot"></div>
+                                <span class="tv-text-sm">需求分析</span>
+                            </div>
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-auto-optimizer-dot"></div>
+                                <span class="tv-text-sm">自动优化</span>
+                            </div>
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-auto-installer-dot"></div>
+                                <span class="tv-text-sm">自动安装</span>
+                            </div>
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-new-function-creator-dot"></div>
+                                <span class="tv-text-sm">新功能创建</span>
+                            </div>
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-ml-predictor-dot"></div>
+                                <span class="tv-text-sm">机器学习</span>
+                            </div>
+                            <div class="tv-flex tv-items-center">
+                                <div class="tv-status-indicator tv-status-active" id="module-real-time-monitor-dot"></div>
+                                <span class="tv-text-sm">实时监控</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统警报 -->
+                <div class="tv-card tv-tech-card">
+                    <div class="tv-card-header">
+                        <h4 class="tv-card-title">
+                            <i class="bi bi-bell me-2"></i>
+                            系统警报
+                        </h4>
+                        <span class="tv-badge tv-badge-danger" id="alert-count">0</span>
+                    </div>
+                    <div class="tv-card-body tv-p-0">
+                        <div id="alerts-container" class="tv-p-sm">
+                            <!-- 警报将动态加载 -->
+                            <div class="tv-alert tv-alert-info">
+                                <div class="tv-alert-icon">
+                                    <i class="bi bi-info-circle"></i>
+                                </div>
+                                <div class="tv-alert-content">
+                                    <div class="tv-alert-title">系统初始化</div>
+                                    <div class="tv-alert-description">控制面板正在启动...</div>
+                                    <div class="tv-alert-time">刚刚</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 监控状态 -->
+            <div class="tv-card tv-tech-card tv-mt-md">
+                <div class="tv-card-header">
+                    <h4 class="tv-card-title">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        监控状态
+                    </h4>
+                </div>
+                <div class="tv-card-body">
+                    <div class="tv-grid tv-grid-4">
+                        <div>
+                            <div class="tv-text-secondary tv-text-sm">监控状态</div>
+                            <div class="tv-text-primary tv-text-md" id="monitoring-status">加载中...</div>
+                        </div>
+                        <div>
+                            <div class="tv-text-secondary tv-text-sm">收集间隔</div>
+                            <div class="tv-text-primary tv-text-md" id="collection-interval">-- 秒</div>
+                        </div>
+                        <div>
+                            <div class="tv-text-secondary tv-text-sm">警报启用</div>
+                            <div class="tv-text-primary tv-text-md" id="alerts-enabled">--</div>
+                        </div>
+                        <div>
+                            <div class="tv-text-secondary tv-text-sm">数据保留</div>
+                            <div class="tv-text-primary tv-text-md" id="retention-days">-- 天</div>
                         </div>
                     </div>
                 </div>
@@ -400,11 +527,9 @@
     </div>
 
     <!-- 加载动画 -->
-    <div id="loading-spinner" class="loading-spinner">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">加载中...</span>
-        </div>
-        <p class="mt-2 text-muted">正在加载数据...</p>
+    <div id="loading-spinner" class="tv-loading">
+        <div class="tv-status-indicator tv-status-connecting"></div>
+        <p class="tv-text-secondary tv-ml-sm">正在加载数据...</p>
     </div>
 
     <!-- Bootstrap JS -->
@@ -412,5 +537,174 @@
     
     <!-- 自定义JavaScript -->
     <script src="/static/js/dashboard.js"></script>
+    
+    <!-- 立即加载系统状态 -->
+    <script>
+        // 立即加载系统状态，不等待DOMContentLoaded
+        (function() {
+            var statusBadge = document.getElementById('system-status-badge');
+            var statusIndicator = document.getElementById('system-status-indicator');
+            
+            // 直接调用API获取状态
+            fetch('/api/system/status')
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.is_running === true) {
+                        if (statusIndicator) {
+                            statusIndicator.className = 'tv-status-indicator tv-status-active';
+                        }
+                        if (statusBadge) {
+                            statusBadge.className = 'tv-badge tv-badge-success';
+                            statusBadge.textContent = '状态: 运行中';
+                        }
+                        
+                        // 启用控制按钮
+                        var startBtn = document.getElementById('start-system');
+                        var stopBtn = document.getElementById('stop-system');
+                        if (startBtn) startBtn.disabled = true;
+                        if (stopBtn) stopBtn.disabled = false;
+                    } else {
+                        if (statusIndicator) {
+                            statusIndicator.className = 'tv-status-indicator tv-status-inactive';
+                        }
+                        if (statusBadge) {
+                            statusBadge.className = 'tv-badge tv-badge-danger';
+                            statusBadge.textContent = '状态: 已停止';
+                        }
+                    }
+                })
+                .catch(function(error) {
+                    console.log('获取状态失败，将在页面完全加载后重试', error);
+                });
+        })();
+    </script>
+    
+    <!-- TradingView风格JS增强 -->
+    <script>
+        // 一些TradingView风格的交互增强
+        document.addEventListener('DOMContentLoaded', function() {
+            // 侧边栏激活状态切换
+            const sidebarItems = document.querySelectorAll('.tv-sidebar-item');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (this.getAttribute('href') && this.getAttribute('href').startsWith('#')) {
+                        e.preventDefault();
+                        sidebarItems.forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // 这里可以添加滚动到对应部分的逻辑
+                        const targetId = this.getAttribute('href').substring(1);
+                        const targetElement = document.getElementById(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                });
+            });
+            
+            // 更新当前时间
+            function updateCurrentTime() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('zh-CN', { 
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timeElements = document.querySelectorAll('#current-time');
+                timeElements.forEach(el => {
+                    if (el.tagName === 'SPAN') {
+                        el.textContent = timeStr;
+                    }
+                });
+            }
+            
+            // 初始更新时间并设置定时器
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // 系统状态徽章更新
+            function updateSystemStatusBadge(status) {
+                const badge = document.getElementById('system-status-badge');
+                if (!badge) return;
+                
+                badge.className = 'tv-badge ';
+                if (status === 'running' || status === 'active') {
+                    badge.classList.add('tv-badge-success');
+                    badge.textContent = '状态: 运行中';
+                } else if (status === 'stopped' || status === 'inactive') {
+                    badge.classList.add('tv-badge-danger');
+                    badge.textContent = '状态: 已停止';
+                } else if (status === 'warning') {
+                    badge.classList.add('tv-badge-warning');
+                    badge.textContent = '状态: 警告';
+                } else {
+                    badge.classList.add('tv-badge-neutral');
+                    badge.textContent = '状态: 加载中...';
+                }
+            }
+            
+            // 初始状态
+            updateSystemStatusBadge('loading');
+            
+            // 为工具提示添加事件
+            const tooltipElements = document.querySelectorAll('[data-tooltip]');
+            tooltipElements.forEach(el => {
+                el.addEventListener('mouseenter', function() {
+                    this.classList.add('tv-tooltip');
+                });
+            });
+            
+            // 隐藏加载动画
+            const loadingSpinner = document.getElementById('loading-spinner');
+            if (loadingSpinner) {
+                setTimeout(() => {
+                    loadingSpinner.style.display = 'none';
+                }, 1000);
+            }
+        });
+        
+        // 为dashboard.js提供辅助函数
+        window.tvTheme = {
+            updateSystemStatus: function(status) {
+                const badge = document.getElementById('system-status-badge');
+                if (!badge) return;
+                
+                badge.className = 'tv-badge ';
+                if (status === 'running' || status === 'active') {
+                    badge.classList.add('tv-badge-success');
+                    badge.textContent = '状态: 运行中';
+                } else if (status === 'stopped' || status === 'inactive') {
+                    badge.classList.add('tv-badge-danger');
+                    badge.textContent = '状态: 已停止';
+                } else if (status === 'warning') {
+                    badge.classList.add('tv-badge-warning');
+                    badge.textContent = '状态: 警告';
+                }
+            },
+            
+            updateModuleStatus: function(moduleId, status) {
+                const dot = document.getElementById(moduleId + '-dot');
+                if (!dot) return;
+                
+                dot.className = 'tv-status-indicator ';
+                if (status === 'active') {
+                    dot.classList.add('tv-status-active');
+                } else if (status === 'inactive') {
+                    dot.classList.add('tv-status-inactive');
+                } else if (status === 'warning') {
+                    dot.classList.add('tv-status-warning');
+                }
+            },
+            
+            updateAlertCount: function(count) {
+                const badge = document.getElementById('alert-count');
+                const sidebarBadge = document.getElementById('sidebar-alert-count');
+                
+                if (badge) badge.textContent = count;
+                if (sidebarBadge) sidebarBadge.textContent = count;
+            }
+        };
+    </script>
 </body>
 </html>

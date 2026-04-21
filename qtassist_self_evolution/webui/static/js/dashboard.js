@@ -44,6 +44,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAllData();
 });
 
+// 备用：页面加载完成后也尝试加载数据
+window.addEventListener('load', function() {
+    setTimeout(loadAllData, 500);
+});
+
 /**
  * 更新当前时间
  */
@@ -59,56 +64,115 @@ function updateCurrentTime() {
  * 初始化性能图表
  */
 function initializeChart() {
-    const ctx = document.getElementById('performance-chart').getContext('2d');
+    // 确保canvas存在
+    const canvas = document.getElementById('performance-chart');
+    if (!canvas) {
+        console.error('Canvas元素不存在');
+        return;
+    }
+    
+    // 设置canvas尺寸
+    canvas.width = canvas.parentElement.clientWidth - 20;
+    canvas.height = 280;
+    
+    // 初始化示例数据
+    const now = new Date();
+    const labels = [];
+    const cpuData = [];
+    const memoryData = [];
+    const diskData = [];
+    
+    for (let i = 20; i >= 0; i--) {
+        const time = new Date(now - i * 60000);
+        labels.push(time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
+        cpuData.push(Math.random() * 30 + 10);
+        memoryData.push(Math.random() * 40 + 20);
+        diskData.push(Math.random() * 20 + 50);
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    // 确认Chart可用
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js未加载，请刷新页面重试');
+        return;
+    }
     
     performanceChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: chartData.timestamps,
+            labels: labels,
             datasets: [
                 {
                     label: 'CPU使用率 (%)',
-                    data: chartData.cpu,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    data: cpuData,
+                    borderColor: '#2962ff',
+                    backgroundColor: 'rgba(41, 98, 255, 0.15)',
                     borderWidth: 2,
                     tension: 0.3,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#2962ff',
+                    pointBorderColor: '#131722',
+                    pointBorderWidth: 2,
+                    pointRadius: 3
                 },
                 {
                     label: '内存使用率 (%)',
-                    data: chartData.memory,
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    data: memoryData,
+                    borderColor: '#00c076',
+                    backgroundColor: 'rgba(0, 192, 118, 0.15)',
                     borderWidth: 2,
                     tension: 0.3,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#00c076',
+                    pointBorderColor: '#131722',
+                    pointBorderWidth: 2,
+                    pointRadius: 3
                 },
                 {
                     label: '磁盘使用率 (%)',
-                    data: chartData.disk,
-                    borderColor: '#f39c12',
-                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    data: diskData,
+                    borderColor: '#ff9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.15)',
                     borderWidth: 2,
                     tension: 0.3,
-                    fill: true
+                    fill: true,
+                    pointBackgroundColor: '#ff9800',
+                    pointBorderColor: '#131722',
+                    pointBorderWidth: 2,
+                    pointRadius: 3
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 500
+            },
             plugins: {
                 legend: {
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        padding: 15
+                        padding: 15,
+                        color: '#d1d4dc',
+                        font: {
+                            size: 12,
+                            family: 'system-ui, -apple-system, sans-serif'
+                        }
                     }
                 },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
+                    backgroundColor: '#1e222d',
+                    titleColor: '#d1d4dc',
+                    bodyColor: '#d1d4dc',
+                    borderColor: '#2a2e39',
+                    borderWidth: 1,
+                    cornerRadius: 4,
+                    padding: 12,
                     callbacks: {
                         label: function(context) {
                             return `${context.dataset.label}: ${context.parsed.y.toFixed(1)}%`;
@@ -121,24 +185,52 @@ function initializeChart() {
                     display: true,
                     title: {
                         display: true,
-                        text: '时间'
+                        text: '时间',
+                        color: '#787b86',
+                        font: {
+                            size: 12,
+                            family: 'system-ui, -apple-system, sans-serif'
+                        }
                     },
                     ticks: {
-                        maxTicksLimit: 10
+                        maxTicksLimit: 10,
+                        color: '#787b86',
+                        font: {
+                            size: 11,
+                            family: 'system-ui, -apple-system, sans-serif'
+                        }
+                    },
+                    grid: {
+                        color: '#2a2e39',
+                        borderColor: '#2a2e39'
                     }
                 },
                 y: {
                     display: true,
                     title: {
                         display: true,
-                        text: '使用率 (%)'
+                        text: '使用率 (%)',
+                        color: '#787b86',
+                        font: {
+                            size: 12,
+                            family: 'system-ui, -apple-system, sans-serif'
+                        }
                     },
                     min: 0,
                     max: 100,
                     ticks: {
                         callback: function(value) {
                             return value + '%';
+                        },
+                        color: '#787b86',
+                        font: {
+                            size: 11,
+                            family: 'system-ui, -apple-system, sans-serif'
                         }
+                    },
+                    grid: {
+                        color: '#2a2e39',
+                        borderColor: '#2a2e39'
                     }
                 }
             },
@@ -148,6 +240,9 @@ function initializeChart() {
             }
         }
     });
+    
+    // 强制渲染图表
+    performanceChart.update();
 }
 
 /**
@@ -228,25 +323,45 @@ function showLoading(show) {
  * 显示通知
  */
 function showNotification(message, type = 'info') {
-    // 创建通知元素
+    // 创建通知元素 - 使用TradingView样式
     const notification = document.createElement('div');
-    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    
+    // 映射类型到TradingView样式
+    const typeMap = {
+        'info': 'tv-alert-info',
+        'success': 'tv-alert-success', 
+        'warning': 'tv-alert-warning',
+        'danger': 'tv-alert-critical'
+    };
+    
+    notification.className = `tv-alert ${typeMap[type] || 'tv-alert-info'} tv-notification`;
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
         z-index: 1050;
         min-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px;
+        box-shadow: var(--tv-shadow-md);
     `;
     
     notification.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="tv-alert-content">${message}</div>
+        <button type="button" class="tv-alert-close" data-dismiss="tv-alert">&times;</button>
     `;
     
     // 添加到页面
     document.body.appendChild(notification);
+    
+    // 添加关闭按钮事件
+    const closeButton = notification.querySelector('.tv-alert-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        });
+    }
     
     // 5秒后自动移除
     setTimeout(() => {
@@ -264,7 +379,9 @@ async function loadSystemStatus() {
         const response = await fetch('/api/system/status');
         const data = await response.json();
         
-        if (data.status === '成功') {
+        console.log('系统状态响应:', data);
+        
+        if (data.status === '成功' || data.status === 'success' || data.is_running) {
             updateSystemStatus(data);
         } else {
             console.error('加载系统状态失败:', data.message);
@@ -280,20 +397,30 @@ async function loadSystemStatus() {
 function updateSystemStatus(data) {
     // 系统状态指示器
     const statusIndicator = document.getElementById('system-status-indicator');
-    const systemStatusBadge = document.getElementById('system-status');
+    const systemStatusBadge = document.getElementById('system-status-badge');
     
     if (data.is_running) {
-        statusIndicator.className = 'module-status module-active';
-        systemStatusBadge.className = 'badge bg-success';
-        systemStatusBadge.textContent = '状态: 运行中';
+        // 使用TradingView风格的状态指示器
+        if (statusIndicator) {
+            statusIndicator.className = 'tv-status-indicator tv-status-active';
+        }
+        if (systemStatusBadge) {
+            systemStatusBadge.className = 'tv-badge tv-badge-success';
+            systemStatusBadge.textContent = '状态: 运行中';
+        }
         
         // 启用/禁用控制按钮
         document.getElementById('start-system').disabled = true;
         document.getElementById('stop-system').disabled = false;
     } else {
-        statusIndicator.className = 'module-status module-inactive';
-        systemStatusBadge.className = 'badge bg-danger';
-        systemStatusBadge.textContent = '状态: 已停止';
+        // 使用TradingView风格的状态指示器
+        if (statusIndicator) {
+            statusIndicator.className = 'tv-status-indicator tv-status-inactive';
+        }
+        if (systemStatusBadge) {
+            systemStatusBadge.className = 'tv-badge tv-badge-danger';
+            systemStatusBadge.textContent = '状态: 已停止';
+        }
         
         // 启用/禁用控制按钮
         document.getElementById('start-system').disabled = false;
@@ -301,43 +428,60 @@ function updateSystemStatus(data) {
     }
     
     // 系统阶段
-    document.getElementById('system-phase').textContent = data.current_phase || '未知';
+    const systemPhaseElement = document.getElementById('system-phase');
+    if (systemPhaseElement) {
+        systemPhaseElement.textContent = data.current_phase || '未知';
+    }
     
     // 心跳时间
     const heartbeatEl = document.getElementById('last-heartbeat');
-    if (data.last_heartbeat) {
+    if (heartbeatEl && data.last_heartbeat) {
         const heartbeatTime = new Date(data.last_heartbeat);
         heartbeatEl.textContent = heartbeatTime.toLocaleTimeString('zh-CN');
-    } else {
+    } else if (heartbeatEl) {
         heartbeatEl.textContent = '--:--:--';
     }
     
     // 运行时长（简单计算）
-    if (data.last_heartbeat && data.is_running) {
-        const heartbeatTime = new Date(data.last_heartbeat);
-        const now = new Date();
-        const diffMs = now - heartbeatTime;
-        const diffMins = Math.floor(diffMs / 60000);
-        
-        if (diffMins < 1) {
-            document.getElementById('uptime').textContent = '刚刚';
-        } else if (diffMins < 60) {
-            document.getElementById('uptime').textContent = `${diffMins}分钟前`;
+    const uptimeElement = document.getElementById('uptime');
+    if (uptimeElement) {
+        if (data.last_heartbeat && data.is_running) {
+            const heartbeatTime = new Date(data.last_heartbeat);
+            const now = new Date();
+            const diffMs = now - heartbeatTime;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) {
+                uptimeElement.textContent = '刚刚';
+            } else if (diffMins < 60) {
+                uptimeElement.textContent = `${diffMins}分钟前`;
+            } else {
+                const hours = Math.floor(diffMins / 60);
+                uptimeElement.textContent = `${hours}小时前`;
+            }
         } else {
-            const hours = Math.floor(diffMins / 60);
-            document.getElementById('uptime').textContent = `${hours}小时前`;
+            uptimeElement.textContent = '--';
         }
-    } else {
-        document.getElementById('uptime').textContent = '--';
     }
     
     // 任务统计
-    document.getElementById('active-tasks').textContent = data.active_tasks || 0;
-    document.getElementById('completed-tasks').textContent = data.completed_tasks || 0;
+    const activeTasksElement = document.getElementById('active-tasks');
+    const completedTasksElement = document.getElementById('completed-tasks');
+    if (activeTasksElement) {
+        activeTasksElement.textContent = data.active_tasks || 0;
+    }
+    if (completedTasksElement) {
+        completedTasksElement.textContent = data.completed_tasks || 0;
+    }
     
     // 模块状态
     if (data.module_status) {
         updateModuleStatus(data.module_status);
+    }
+    
+    // 更新全局主题状态
+    if (window.tvTheme && window.tvTheme.updateSystemStatus) {
+        window.tvTheme.updateSystemStatus(data.is_running ? 'running' : 'stopped');
     }
 }
 
@@ -346,25 +490,29 @@ function updateSystemStatus(data) {
  */
 function updateModuleStatus(moduleStatus) {
     const modules = [
-        { id: 'usage-tracker', key: 'usage_tracker' },
-        { id: 'demand-analyzer', key: 'demand_analyzer' },
-        { id: 'auto-optimizer', key: 'auto_optimizer' },
-        { id: 'auto-installer', key: 'auto_installer' },
-        { id: 'new-function-creator', key: 'new_function_creator' },
-        { id: 'ml-predictor', key: 'ml_predictor' },
-        { id: 'real-time-monitor', key: 'real_time_monitor' }
+        { id: 'usage-tracker', key: 'usage_tracker', dotId: 'module-usage-tracker-dot' },
+        { id: 'demand-analyzer', key: 'demand_analyzer', dotId: 'module-demand-analyzer-dot' },
+        { id: 'auto-optimizer', key: 'auto_optimizer', dotId: 'module-auto-optimizer-dot' },
+        { id: 'auto-installer', key: 'auto_installer', dotId: 'module-auto-installer-dot' },
+        { id: 'new-function-creator', key: 'new_function_creator', dotId: 'module-new-function-creator-dot' },
+        { id: 'ml-predictor', key: 'ml_predictor', dotId: 'module-ml-predictor-dot' },
+        { id: 'real-time-monitor', key: 'real_time_monitor', dotId: 'module-real-time-monitor-dot' }
     ];
     
     modules.forEach(module => {
-        const element = document.getElementById(`module-${module.id}`);
-        if (element) {
+        const dotElement = document.getElementById(module.dotId);
+        if (dotElement) {
             if (moduleStatus[module.key]) {
-                element.className = 'badge bg-success';
-                element.innerHTML = `<i class="bi bi-check-circle"></i> ${element.textContent.trim()}`;
+                dotElement.className = 'tv-status-indicator tv-status-active';
             } else {
-                element.className = 'badge bg-danger';
-                element.innerHTML = `<i class="bi bi-x-circle"></i> ${element.textContent.trim()}`;
+                dotElement.className = 'tv-status-indicator tv-status-inactive';
             }
+        }
+        
+        // 也更新全局主题状态
+        if (window.tvTheme && window.tvTheme.updateModuleStatus) {
+            const status = moduleStatus[module.key] ? 'active' : 'inactive';
+            window.tvTheme.updateModuleStatus(`module-${module.id}`, status);
         }
     });
 }
@@ -464,20 +612,20 @@ function updateCurrentMetrics(metrics) {
         if (lastMetrics.cpu_usage !== null) {
             const change = currentCpu - lastMetrics.cpu_usage;
             cpuChange.textContent = change >= 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
-            cpuChange.className = `metric-change ${change >= 0 ? 'text-danger' : 'text-success'}`;
+            cpuChange.className = `tv-metric-change ${change >= 0 ? 'negative' : 'positive'}`;
         } else {
             cpuChange.textContent = '--';
         }
         
         lastMetrics.cpu_usage = currentCpu;
         
-        // 根据阈值设置颜色
+        // 根据阈值设置颜色 - 使用TradingView样式
         if (currentCpu > 90) {
-            cpuElement.className = 'metric-value text-danger';
+            cpuElement.className = 'tv-metric-value negative';
         } else if (currentCpu > 80) {
-            cpuElement.className = 'metric-value text-warning';
+            cpuElement.className = 'tv-metric-value warning';
         } else {
-            cpuElement.className = 'metric-value text-primary';
+            cpuElement.className = 'tv-metric-value neutral';
         }
     } else {
         // 如果CPU数据不可用，显示默认值
@@ -496,20 +644,20 @@ function updateCurrentMetrics(metrics) {
         if (lastMetrics.memory_usage !== null) {
             const change = currentMemory - lastMetrics.memory_usage;
             memoryChange.textContent = change >= 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
-            memoryChange.className = `metric-change ${change >= 0 ? 'text-danger' : 'text-success'}`;
+            memoryChange.className = `tv-metric-change ${change >= 0 ? 'negative' : 'positive'}`;
         } else {
             memoryChange.textContent = '--';
         }
         
         lastMetrics.memory_usage = currentMemory;
         
-        // 根据阈值设置颜色
+        // 根据阈值设置颜色 - 使用TradingView样式
         if (currentMemory > 95) {
-            memoryElement.className = 'metric-value text-danger';
+            memoryElement.className = 'tv-metric-value negative';
         } else if (currentMemory > 85) {
-            memoryElement.className = 'metric-value text-warning';
+            memoryElement.className = 'tv-metric-value warning';
         } else {
-            memoryElement.className = 'metric-value text-info';
+            memoryElement.className = 'tv-metric-value neutral';
         }
     } else {
         // 如果内存数据不可用，显示默认值
@@ -528,20 +676,20 @@ function updateCurrentMetrics(metrics) {
         if (lastMetrics.disk_usage !== null) {
             const change = currentDisk - lastMetrics.disk_usage;
             diskChange.textContent = change >= 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
-            diskChange.className = `metric-change ${change >= 0 ? 'text-danger' : 'text-success'}`;
+            diskChange.className = `tv-metric-change ${change >= 0 ? 'negative' : 'positive'}`;
         } else {
             diskChange.textContent = '--';
         }
         
         lastMetrics.disk_usage = currentDisk;
         
-        // 根据阈值设置颜色
+        // 根据阈值设置颜色 - 使用TradingView样式
         if (currentDisk > 95) {
-            diskElement.className = 'metric-value text-danger';
+            diskElement.className = 'tv-metric-value negative';
         } else if (currentDisk > 85) {
-            diskElement.className = 'metric-value text-warning';
+            diskElement.className = 'tv-metric-value warning';
         } else {
-            diskElement.className = 'metric-value text-warning';
+            diskElement.className = 'tv-metric-value neutral';
         }
     } else {
         // 如果磁盘数据不可用，显示默认值
@@ -556,13 +704,13 @@ function updateCurrentMetrics(metrics) {
     functionElement.textContent = `${currentFunctionTime.toFixed(1)}ms`;
     functionChange.textContent = '--';
     
-    // 根据阈值设置颜色
+    // 根据阈值设置颜色 - 使用TradingView样式
     if (currentFunctionTime > 30000) { // 30秒
-        functionElement.className = 'metric-value text-danger';
+        functionElement.className = 'tv-metric-value negative';
     } else if (currentFunctionTime > 10000) { // 10秒
-        functionElement.className = 'metric-value text-warning';
+        functionElement.className = 'tv-metric-value warning';
     } else {
-        functionElement.className = 'metric-value text-success';
+        functionElement.className = 'tv-metric-value positive';
     }
 }
 
@@ -659,12 +807,23 @@ function updateAlerts(alerts, count) {
     const alertsContainer = document.getElementById('alerts-container');
     const alertCount = document.getElementById('alert-count');
     
-    // 更新警报计数
+    // 更新警报计数 - 使用TradingView样式
     alertCount.textContent = count;
     if (count > 0) {
-        alertCount.className = 'badge bg-danger';
+        alertCount.className = 'tv-badge tv-badge-danger';
     } else {
-        alertCount.className = 'badge bg-success';
+        alertCount.className = 'tv-badge tv-badge-success';
+    }
+    
+    // 更新侧边栏警报计数
+    const sidebarAlertCount = document.getElementById('sidebar-alert-count');
+    if (sidebarAlertCount) {
+        sidebarAlertCount.textContent = count;
+        if (count > 0) {
+            sidebarAlertCount.className = 'tv-badge tv-badge-danger ms-auto';
+        } else {
+            sidebarAlertCount.className = 'tv-badge tv-badge-success ms-auto';
+        }
     }
     
     // 清空现有警报
@@ -673,10 +832,10 @@ function updateAlerts(alerts, count) {
     // 如果没有警报
     if (alerts.length === 0) {
         const noAlerts = document.createElement('div');
-        noAlerts.className = 'alert-item alert-info';
+        noAlerts.className = 'tv-alert tv-alert-info';
         noAlerts.innerHTML = `
-            <div class="fw-bold">无警报</div>
-            <div class="small text-muted">系统运行正常，未检测到任何警报。</div>
+            <div class="tv-alert-title">无警报</div>
+            <div class="tv-alert-content">系统运行正常，未检测到任何警报。</div>
         `;
         alertsContainer.appendChild(noAlerts);
         return;
@@ -686,12 +845,12 @@ function updateAlerts(alerts, count) {
     alerts.forEach(alert => {
         const alertElement = document.createElement('div');
         
-        // 确定警报级别和样式
-        let alertClass = 'alert-info';
+        // 确定警报级别和样式 - 使用TradingView样式
+        let alertClass = 'tv-alert-info';
         if (alert.severity === 'error' || alert.severity === 'critical') {
-            alertClass = 'alert-critical';
+            alertClass = 'tv-alert-critical';
         } else if (alert.severity === 'warning') {
-            alertClass = 'alert-warning';
+            alertClass = 'tv-alert-warning';
         }
         
         // 格式化时间
@@ -712,11 +871,11 @@ function updateAlerts(alerts, count) {
             }
         }
         
-        alertElement.className = `alert-item ${alertClass}`;
+        alertElement.className = `tv-alert ${alertClass}`;
         alertElement.innerHTML = `
-            <div class="fw-bold">${alert.title || '系统警报'}</div>
-            <div class="small text-muted">${alert.message || '无详细描述'}</div>
-            <div class="small text-muted">${timeText}</div>
+            <div class="tv-alert-title">${alert.title || '系统警报'}</div>
+            <div class="tv-alert-content">${alert.message || '无详细描述'}</div>
+            <div class="tv-alert-time">${timeText}</div>
         `;
         
         // 添加点击事件来确认警报
@@ -789,47 +948,47 @@ async function loadMLStatus() {
 function updateMLStatus(data) {
     const mlContainer = document.getElementById('ml-status');
     
+    if (!mlContainer) return;
+    
     if (data.ml_available) {
         const stats = data.stats || {};
         
         mlContainer.innerHTML = `
-            <div class="row">
-                <div class="col-6">
-                    <div class="mb-2">
-                        <div class="fw-bold">预测总数</div>
-                        <div class="text-muted small">${stats.total_predictions || 0}</div>
+            <div class="tv-grid tv-grid-cols-2 tv-gap-3 tv-mb-4">
+                <div class="tv-stat-item">
+                    <div class="tv-stat-label">预测总数</div>
+                    <div class="tv-stat-value">${stats.total_predictions || 0}</div>
+                </div>
+                <div class="tv-stat-item">
+                    <div class="tv-stat-label">准确率</div>
+                    <div class="tv-stat-value ${(typeof stats.accuracy === 'number' && !isNaN(stats.accuracy) && stats.accuracy >= 0.7) ? 'positive' : ((typeof stats.accuracy === 'number' && !isNaN(stats.accuracy) && stats.accuracy >= 0.5) ? 'neutral' : 'negative')}">
+                        ${(typeof stats.accuracy === 'number' && !isNaN(stats.accuracy)) ? `${(stats.accuracy * 100).toFixed(1)}%` : '--'}
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="mb-2">
-                        <div class="fw-bold">准确率</div>
-                        <div class="text-muted small">${(typeof stats.accuracy === 'number' && !isNaN(stats.accuracy)) ? `${(stats.accuracy * 100).toFixed(1)}%` : '--'}</div>
+                <div class="tv-stat-item">
+                    <div class="tv-stat-label">模型状态</div>
+                    <div class="tv-stat-value ${stats.model_trained ? 'positive' : 'negative'}">
+                        ${stats.model_trained ? '已训练' : '未训练'}
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="mb-2">
-                        <div class="fw-bold">模型状态</div>
-                        <div class="text-muted small">${stats.model_trained ? '已训练' : '未训练'}</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="mb-2">
-                        <div class="fw-bold">备用预测</div>
-                        <div class="text-muted small">${stats.fallback_predictions || 0}</div>
-                    </div>
+                <div class="tv-stat-item">
+                    <div class="tv-stat-label">备用预测</div>
+                    <div class="tv-stat-value">${stats.fallback_predictions || 0}</div>
                 </div>
             </div>
-            <div class="mt-3">
-                <button class="btn btn-sm btn-outline-primary" onclick="loadMLPredictions()">
-                    <i class="bi bi-lightning"></i> 查看预测
+            <div class="tv-flex tv-justify-center">
+                <button class="tv-btn tv-btn-primary tv-btn-sm" onclick="loadMLPredictions()">
+                    <span class="tv-btn-icon">⚡</span> 查看预测
                 </button>
             </div>
         `;
     } else {
         mlContainer.innerHTML = `
-            <div class="text-center py-3">
-                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-                <p class="mt-2 text-muted">机器学习模块不可用</p>
+            <div class="tv-flex tv-flex-col tv-items-center tv-justify-center tv-py-4">
+                <div class="tv-icon tv-icon-warning tv-mb-2">
+                    ⚠️
+                </div>
+                <div class="tv-text tv-text-secondary">机器学习模块不可用</div>
             </div>
         `;
     }
@@ -865,39 +1024,51 @@ function showMLPredictions(data) {
         return;
     }
     
-    // 创建预测列表
-    let predictionList = '<div class="list-group">';
+    // 创建预测列表 - 使用TradingView样式
+    let predictionList = '<div class="tv-list">';
     predictions.forEach((pred, index) => {
         const confidencePercent = (pred.confidence * 100).toFixed(1);
         const functionName = pred.predicted_value || pred.target || '未知功能';
         const explanation = pred.explanation || '基于历史使用模式';
+        
+        // 根据置信度设置徽章类名
+        let badgeClass = 'tv-badge tv-badge-info';
+        if (pred.confidence >= 0.8) {
+            badgeClass = 'tv-badge tv-badge-success';
+        } else if (pred.confidence >= 0.6) {
+            badgeClass = 'tv-badge tv-badge-warning';
+        }
+        
         predictionList += `
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between">
-                    <span>${index + 1}. ${functionName}</span>
-                    <span class="badge bg-primary">${confidencePercent}%</span>
+            <div class="tv-list-item">
+                <div class="tv-flex tv-justify-between tv-items-center tv-mb-1">
+                    <span class="tv-text-primary">${index + 1}. ${functionName}</span>
+                    <span class="${badgeClass}">${confidencePercent}%</span>
                 </div>
-                <small class="text-muted">${explanation}</small>
+                <div class="tv-text-secondary tv-text-sm">${explanation}</div>
             </div>
         `;
     });
     predictionList += '</div>';
     
-    // 显示模态框
+    // 显示模态框 - 使用TradingView样式
     const modalHtml = `
-        <div class="modal fade" id="mlPredictionsModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><i class="bi bi-lightning"></i> 功能预测</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="tv-modal" id="mlPredictionsModal" tabindex="-1">
+            <div class="tv-modal-overlay"></div>
+            <div class="tv-modal-dialog tv-modal-centered">
+                <div class="tv-modal-content">
+                    <div class="tv-modal-header">
+                        <h5 class="tv-modal-title">
+                            <span class="tv-modal-icon">⚡</span> 功能预测
+                        </h5>
+                        <button type="button" class="tv-modal-close" data-dismiss="tv-modal">&times;</button>
                     </div>
-                    <div class="modal-body">
-                        <p class="text-muted mb-3">根据历史使用模式预测用户下一步可能使用的功能：</p>
+                    <div class="tv-modal-body">
+                        <p class="tv-text-secondary tv-mb-3">根据历史使用模式预测用户下一步可能使用的功能：</p>
                         ${predictionList}
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <div class="tv-modal-footer">
+                        <button type="button" class="tv-btn tv-btn-secondary" data-dismiss="tv-modal">关闭</button>
                     </div>
                 </div>
             </div>
@@ -909,13 +1080,48 @@ function showMLPredictions(data) {
     modalContainer.innerHTML = modalHtml;
     document.body.appendChild(modalContainer);
     
-    // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('mlPredictionsModal'));
-    modal.show();
+    // 获取模态框元素
+    const modalElement = document.getElementById('mlPredictionsModal');
     
-    // 模态框关闭后移除元素
-    document.getElementById('mlPredictionsModal').addEventListener('hidden.bs.modal', function() {
-        modalContainer.remove();
+    // 显示模态框
+    setTimeout(() => {
+        modalElement.classList.add('tv-show');
+        modalElement.style.display = 'block';
+    }, 10);
+    
+    // 关闭按钮事件
+    const closeButton = modalElement.querySelector('.tv-modal-close');
+    const footerCloseButton = modalElement.querySelector('.tv-modal-footer .tv-btn[data-dismiss="tv-modal"]');
+    
+    function closeModal() {
+        modalElement.classList.remove('tv-show');
+        setTimeout(() => {
+            if (modalContainer.parentNode) {
+                modalContainer.remove();
+            }
+        }, 300);
+    }
+    
+    if (closeButton) {
+        closeButton.addEventListener('click', closeModal);
+    }
+    
+    if (footerCloseButton) {
+        footerCloseButton.addEventListener('click', closeModal);
+    }
+    
+    // 点击遮罩层关闭
+    const overlay = modalElement.querySelector('.tv-modal-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', closeModal);
+    }
+    
+    // ESC键关闭
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape' && modalElement.classList.contains('tv-show')) {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
     });
 }
 
