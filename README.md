@@ -77,8 +77,36 @@ pip install -e .
 
 #### 启动Web控制面板
 
+**方法1: 使用命令行工具（推荐）**
+
 ```bash
+# 如果已经安装了包
 qtassist-evolution web --port 5001
+```
+
+**方法2: 从源代码直接运行**
+
+如果尚未安装包，可以直接从源代码运行：
+
+```bash
+# 使用虚拟环境的Python
+python -m qtassist_self_evolution.webui.app --port 5001
+
+# 或使用提供的启动脚本
+./start_webui.sh
+# 或
+python start_webui.py --port 5001
+```
+
+**方法3: 手动启动**
+
+```bash
+# 激活虚拟环境（如果有）
+source venv/bin/activate
+
+# 运行Flask应用
+cd qtassist_self_evolution/webui
+python app.py --port 5001
 ```
 
 访问 http://localhost:5001 查看控制面板。

@@ -42,9 +42,11 @@ except ImportError as e:
     sys.exit(1)
 
 # 创建Flask应用
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+static_dir = os.path.join(os.path.dirname(__file__), 'static')
 app = Flask(__name__, 
-           template_folder='templates',
-           static_folder='static')
+           template_folder=template_dir,
+           static_folder=static_dir)
 
 # 全局控制器实例
 _controller = None
@@ -484,12 +486,22 @@ def internal_error(error):
 
 def main():
     """主函数"""
+    import argparse
+    
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description='自我进化系统Web控制面板')
+    parser.add_argument('--host', default='127.0.0.1', help='服务器主机 (默认: 127.0.0.1)')
+    parser.add_argument('--port', type=int, default=5001, help='服务器端口 (默认: 5001)')
+    parser.add_argument('--debug', action='store_true', help='启用调试模式')
+    args = parser.parse_args()
+    
     print("=" * 60)
     print("自我进化系统可视化控制面板")
     print("=" * 60)
     print(f"启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Flask可用: {HAS_FLASK}")
     print(f"进化系统可用: {HAS_EVOLUTION}")
+    print(f"服务器配置: {args.host}:{args.port}")
     
     if not HAS_FLASK:
         print("错误: Flask未安装。请运行: pip install flask")
@@ -512,11 +524,11 @@ def main():
         
         # 启动Flask应用
         print("\n启动Web服务器...")
-        print("控制面板地址: http://127.0.0.1:5001")
+        print(f"控制面板地址: http://{args.host}:{args.port}")
         print("按 Ctrl+C 停止服务器")
         
         # 在生产环境中应该使用更安全的设置
-        app.run(host='127.0.0.1', port=5001, debug=True, threaded=True)
+        app.run(host=args.host, port=args.port, debug=args.debug, threaded=True)
         
     except KeyboardInterrupt:
         print("\n接收到中断信号，正在停止服务器...")
