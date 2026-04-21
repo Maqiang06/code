@@ -1,0 +1,12 @@
+include LICENSE
+include README.md
+include requirements.txt
+include pyproject.toml
+
+recursive-include qtassist_self_evolution/webui/static *
+recursive-include qtassist_self_evolution/webui/templates *
+recursive-include qtassist_self_evolution *.pyi
+
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *$py.class

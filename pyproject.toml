@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qtassist-self-evolution"
+version = "1.0.0"
+description = "量化交易助手自我进化系统 - 基于机器学习的自动化量化交易系统优化平台"
+readme = "README.md"
+authors = [
+    {name = "PTrade Code", email = "ptrade-code@example.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["quantitative trading", "machine learning", "self-evolution", "ptrade", "trading automation"]
+dependencies = [
+    "psutil>=5.9.0",
+    "schedule>=1.2.0",
+]
+
+[project.optional-dependencies]
+web = ["Flask>=2.3.0"]
+ml = ["numpy>=1.24.0", "scikit-learn>=1.3.0", "pandas>=2.0.0", "joblib>=1.3.0"]
+dev = ["pytest>=7.4.0", "black>=23.0.0", "flake8>=6.0.0", "mypy>=1.5.0"]
+all = ["Flask>=2.3.0", "numpy>=1.24.0", "scikit-learn>=1.3.0", "pandas>=2.0.0", "joblib>=1.3.0"]
+
+[project.scripts]
+qtassist-evolution = "qtassist_self_evolution.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ptrade-code/qtassist-self-evolution"
+Documentation = "https://github.com/ptrade-code/qtassist-self-evolution/wiki"
+Repository = "https://github.com/ptrade-code/qtassist-self-evolution"
+Issues = "https://github.com/ptrade-code/qtassist-self-evolution/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qtassist_self_evolution*"]
+exclude = ["tests*", "docs*", "data*", "logs*"]
+
+[tool.setuptools.package-data]
+"qtassist_self_evolution" = ["py.typed"]
+"qtassist_self_evolution.webui" = ["static/*", "static/css/*", "static/js/*", "templates/*"]
