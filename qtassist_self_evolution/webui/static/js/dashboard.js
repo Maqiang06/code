@@ -44,11 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAllData();
 });
 
-// 备用：页面加载完成后也尝试加载数据
-window.addEventListener('load', function() {
-    setTimeout(loadAllData, 500);
-});
-
 /**
  * 更新当前时间
  */
