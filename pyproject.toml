@@ -15,7 +15,12 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Financial and Insurance Industry",
     "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Monitoring",
+    "Topic :: Database",
+    "Framework :: Flask",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -39,10 +44,10 @@ all = ["Flask>=2.3.0", "numpy>=1.24.0", "scikit-learn>=1.3.0", "pandas>=2.0.0", 
 qtassist-evolution = "qtassist_self_evolution.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/ptrade-code/qtassist-self-evolution"
-Documentation = "https://github.com/ptrade-code/qtassist-self-evolution/wiki"
-Repository = "https://github.com/ptrade-code/qtassist-self-evolution"
-Issues = "https://github.com/ptrade-code/qtassist-self-evolution/issues"
+Homepage = "https://github.com/Maqiang06/code"
+Documentation = "https://maqiang06.github.io/code/"
+Repository = "https://github.com/Maqiang06/code"
+Issues = "https://github.com/Maqiang06/code/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -3,6 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PTrade](https://img.shields.io/badge/PTrade-Compatible-green.svg)](http://dict.thinktrader.net/)
+[![CI Status](https://github.com/Maqiang06/code/actions/workflows/ci.yml/badge.svg)](https://github.com/Maqiang06/code/actions/workflows/ci.yml)
+[![Release Status](https://github.com/Maqiang06/code/actions/workflows/release.yml/badge.svg)](https://github.com/Maqiang06/code/actions/workflows/release.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/Maqiang06/code)](https://github.com/Maqiang06/code/releases)
 
 一个基于机器学习的自动化量化交易系统优化平台，能够自我监控、分析和进化，专门为PTrade量化交易助手设计。
 
