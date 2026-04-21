@@ -71,6 +71,24 @@
 - API文档（API.md）
 - 贡献指南（CONTRIBUTING.md）
 
+## [1.0.1] - 2026-04-21
+
+### 改进
+- **PyPI发布配置优化**：
+  - 更新项目URL指向正确的GitHub仓库
+  - 添加更多分类器（AI、监控、数据库、Flask框架等）
+  - 完善项目元数据
+  
+- **项目徽章增强**：
+  - 添加CI构建状态徽章
+  - 添加发布状态徽章
+  - 添加GitHub发布版本徽章
+  
+- **代码质量提升**：
+  - 优化类型注解
+  - 改进文档链接
+  - 增强配置管理
+
 ## 版本说明
 
 ### 版本号规则
@@ -113,7 +131,7 @@
 
 ## 相关链接
 
-- [GitHub仓库](https://github.com/ptrade-code/qtassist-self-evolution)
-- [问题追踪](https://github.com/ptrade-code/qtassist-self-evolution/issues)
-- [文档网站](https://github.com/ptrade-code/qtassist-self-evolution/wiki)
-- [讨论区](https://github.com/ptrade-code/qtassist-self-evolution/discussions)
+- [GitHub仓库](https://github.com/Maqiang06/code)
+- [问题追踪](https://github.com/Maqiang06/code/issues)
+- [文档网站](https://maqiang06.github.io/code/)
+- [讨论区](https://github.com/Maqiang06/code/discussions)

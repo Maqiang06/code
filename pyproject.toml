@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qtassist-self-evolution"
-version = "1.0.0"
+version = "1.0.1"
 description = "量化交易助手自我进化系统 - 基于机器学习的自动化量化交易系统优化平台"
 readme = "README.md"
 authors = [
